@@ -1,0 +1,90 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Buscaminas</title>
+  <style>
+    /* Estilos básicos para el tablero y las celdas */
+    #tablero {
+      display: grid;
+      margin: 20px auto;
+      border: 2px solid #000;
+    }
+
+    .celda {
+      width: 40px;
+      height: 40px;
+      background-color: lightgray;
+      text-align: center;
+      vertical-align: middle;
+      border: 1px solid #555;
+      cursor: pointer;
+    }
+
+    .celda-revelada {
+      background-color: #d9d9d9;
+    }
+
+    .celda-mina {
+      background-color: red;
+    }
+  </style>
+</head>
+<body>
+  <h1>Juego Buscaminas</h1>
+
+  <select id="nivel">
+    <option value="8x8">Fácil (8x8)</option>
+    <option value="16x16">Medio (16x16)</option>
+    <option value="16x30">Difícil (16x30)</option>
+  </select>
+
+  <div id="tablero"></div>
+
+  <script>
+    const tablero = document.getElementById('tablero');
+    const nivelSelect = document.getElementById('nivel');
+
+    // Listener para cambio de nivel
+    nivelSelect.addEventListener('change', generarTablero);
+
+    function generarTablero() {
+      tablero.innerHTML = ''; // Limpia el tablero
+
+      const [filas, columnas] = nivelSelect.value.split('x').map(Number);
+      tablero.style.gridTemplateRows = `repeat(${filas}, 1fr)`;
+      tablero.style.gridTemplateColumns = `repeat(${columnas}, 1fr)`;
+
+      for (let i = 0; i < filas; i++) {
+        for (let j = 0; j < columnas; j++) {
+          const celda = document.createElement('button');
+          celda.classList.add('celda');
+          celda.dataset.fila = i;
+          celda.dataset.columna = j;
+          tablero.appendChild(celda);
+        }
+      }
+
+      // Aquí se podría agregar una solicitud Fetch para el servidor
+      fetch('generar_tablero.php', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json'
+        },
+        body: JSON.stringify({ filas, columnas })
+      })
+      .then(response => response.json())
+      .then(data => {
+        console.log('Tablero generado en el servidor:', data);
+      })
+      .catch(error => {
+        console.error('Error al generar el tablero:', error);
+      });
+    }
+
+    // Generar tablero por defecto al iniciar
+    generarTablero();
+  </script>
+</body>
+</html>
