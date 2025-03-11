@@ -1,0 +1,279 @@
+## Índice
+
+1. [Introducción](#1-introducción)
+   - 1.1 [Propósito del Sistema](#11-propósito-del-sistema)
+   - 1.2 [Alcance del Proyecto](#12-alcance-del-proyecto)
+   - 1.3 [Tecnologías Utilizadas](#13-tecnologías-utilizadas)
+
+2. [Descripción de las Funcionalidades](#2-descripción-de-las-funcionalidades)
+   - 2.1 [Autenticación de Usuarios con Roles](#21-autenticación-de-usuarios-con-roles)
+     - 2.1.1 [Administrador](#211-administrador)
+     - 2.1.2 [Usuario](#212-usuario)
+   - 2.2 [Módulo de CRUD para Espacios](#22-módulo-de-crud-para-espacios)
+   - 2.3 [Calendario Interactivo](#23-calendario-interactivo)
+   - 2.4 [Envío de Correos Electrónicos](#24-envío-de-correos-electrónicos)
+
+3. [Diagrama de Base de Datos](#3-diagrama-de-base-de-datos)
+   - 3.1 [Tablas Principales](#31-tablas-principales)
+     - 3.1.1 [`users`](#311-users)
+     - 3.1.2 [`spaces`](#312-spaces)
+     - 3.1.3 [`reservations`](#313-reservations)
+   - 3.2 [Relaciones entre Tablas](#32-relaciones-entre-tablas)
+   - 3.3 [Diagrama Entidad-Relación (ERD)](#33-diagrama-entidad-relación-erd)
+
+4. [Descripción de las Relaciones](#4-descripción-de-las-relaciones)
+   - 4.1 [Relación `users` y `reservations`](#41-relación-users-y-reservations)
+   - 4.2 [Relación `spaces` y `reservations`](#42-relación-spaces-y-reservations)
+
+5. [Ejemplo de Consultas SQL](#5-ejemplo-de-consultas-sql)
+   - 5.1 [Obtener todas las reservas de un usuario](#51-obtener-todas-las-reservas-de-un-usuario)
+   - 5.2 [Obtener todos los espacios disponibles](#52-obtener-todos-los-espacios-disponibles)
+   - 5.3 [Obtener todas las reservas de un espacio específico](#53-obtener-todas-las-reservas-de-un-espacio-específico)
+
+6. [Configuración del Proyecto](#6-configuración-del-proyecto)
+   - 6.1 [Requisitos Previos](#61-requisitos-previos)
+   - 6.2 [Instalación y Configuración](#62-instalación-y-configuración)
+     - 6.2.1 [Clonar el Repositorio](#621-clonar-el-repositorio)
+     - 6.2.2 [Instalar Dependencias](#622-instalar-dependencias)
+     - 6.2.3 [Configurar el Entorno](#623-configurar-el-entorno)
+     - 6.2.4 [Ejecutar Migraciones y Seeders](#624-ejecutar-migraciones-y-seeders)
+     - 6.2.5 [Compilar Assets](#625-compilar-assets)
+     - 6.2.6 [Ejecutar el Servidor](#626-ejecutar-el-servidor)
+   - 6.3 [Estructura del Proyecto](#63-estructura-del-proyecto)
+
+7. [Uso de la Aplicación](#7-uso-de-la-aplicación)
+   - 7.1 [Registro e Inicio de Sesión](#71-registro-e-inicio-de-sesión)
+   - 7.2 [Gestión de Espacios](#72-gestión-de-espacios)
+   - 7.3 [Realización de Reservas](#73-realización-de-reservas)
+   - 7.4 [Notificaciones por Correo Electrónico](#74-notificaciones-por-correo-electrónico)
+
+8. [Consideraciones Adicionales](#8-consideraciones-adicionales)
+   - 8.1 [Seguridad](#81-seguridad)
+   - 8.2 [Escalabilidad](#82-escalabilidad)
+   - 8.3 [Mantenimiento](#83-mantenimiento)
+
+9. [Diagrama de Base de Datos (Imagen)](#9-diagrama-de-base-de-datos-imagen)
+   - 9.1 [Herramientas para Crear el Diagrama](#91-herramientas-para-crear-el-diagrama)
+   - 9.2 [Ejemplo de Diagrama ERD](#92-ejemplo-de-diagrama-erd)
+
+10. [Conclusión](#10-conclusión)
+
+
+- DESARROLLO
+# **Reservaciones04 - Sistema de Gestión de Reservas**
+
+Este proyecto es un sistema web desarrollado en **Laravel** que permite gestionar reservas de espacios en la **Facultad de Ingeniería UAC**. Incluye autenticación de usuarios, roles diferenciados, un módulo de CRUD para espacios, un calendario interactivo y envío de correos electrónicos.
+
+---
+
+## **Requerimientos Funcionales**
+
+1. **Autenticación de Usuarios con Roles:**
+   - **Administrador:** Gestiona espacios y visualiza reservas.
+   - **Usuario:** Realiza y gestiona sus reservas, con posibilidad de editar hasta 1 día antes.
+
+2. **Módulo de CRUD para Espacios:**
+   - Campos: Nombre, descripción, capacidad y horario de disponibilidad.
+
+3. **Calendario Interactivo:**
+   - Visualización de reservas existentes.
+   - Funcionalidad para evitar conflictos de horarios al reservar.
+
+4. **Envío de Correos Electrónicos:**
+   - Confirmación de reserva.
+   - Recordatorio 24 horas antes del evento.
+
+---
+
+## **Tecnologías Utilizadas**
+
+- **Backend:** Laravel (PHP)
+- **Frontend:** Blade (HTML), TailwindCSS (CSS)
+- **Base de Datos:** MySQL
+- **Autenticación:** Laravel Sanctum
+- **Calendario:** FullCalendar (JavaScript)
+- **Envío de Correos:** Laravel Mail
+
+---
+
+## **Instalación y Configuración**
+
+Sigue estos pasos para configurar y ejecutar el proyecto en tu entorno local.
+
+### **1. Requisitos Previos**
+
+Asegúrate de tener instalado lo siguiente:
+- **PHP** (versión 8.0 o superior).
+- **Composer** (gestor de dependencias de PHP).
+- **Node.js** y **npm** (para compilar assets).
+- **MySQL** o cualquier otra base de datos compatible.
+
+### **2. Clonar el Repositorio**
+
+Clona el repositorio en tu máquina local:
+
+```bash
+git clone https://github.com/tu-usuario/Reservaciones04.git
+cd Reservaciones04
+```
+
+### **3. Instalar Dependencias**
+
+Instala las dependencias de Composer y npm:
+
+```bash
+composer install
+npm install
+```
+
+### **4. Configurar el Entorno**
+
+1. Copia el archivo `.env.example` y renómbralo a `.env`:
+   ```bash
+   cp .env.example .env
+   ```
+
+2. Genera una clave de aplicación:
+   ```bash
+   php artisan key:generate
+   ```
+
+3. Configura la base de datos en el archivo `.env`:
+   ```env
+   DB_CONNECTION=mysql
+   DB_HOST=127.0.0.1
+   DB_PORT=3306
+   DB_DATABASE=nombre_de_tu_base_de_datos
+   DB_USERNAME=tu_usuario
+   DB_PASSWORD=tu_contraseña
+   ```
+
+### **5. Ejecutar Migraciones y Seeders**
+
+Crea las tablas en la base de datos y pobla con datos iniciales:
+
+```bash
+php artisan migrate
+php artisan db:seed
+```
+
+### **6. Compilar Assets**
+
+Compila los archivos CSS y JavaScript:
+
+```bash
+npm run dev
+```
+
+Para producción, usa:
+```bash
+npm run build
+```
+
+### **7. Ejecutar el Servidor**
+
+Inicia el servidor de desarrollo de Laravel:
+
+```bash
+php artisan serve
+```
+
+Visita la aplicación en tu navegador:
+```
+http://127.0.0.1:8000
+```
+
+---
+
+## **Estructura del Proyecto**
+
+```
+Reservaciones04/
+├── app/
+│   ├── Http/Controllers/
+│   │   ├── Auth/
+│   │   ├── SpaceController.php
+│   │   └── ReservationController.php
+│   ├── Models/
+│   │   ├── User.php
+│   │   ├── Space.php
+│   │   └── Reservation.php
+├── database/
+│   ├── migrations/
+│   ├── seeders/
+│   └── factories/
+├── resources/
+│   ├── views/
+│   │   ├── auth/
+│   │   ├── spaces/
+│   │   └── reservations/
+├── routes/
+│   ├── web.php
+│   └── api.php
+├── config/
+├── public/
+├── tests/
+├── .env
+├── .env.example
+├── composer.json
+├── package.json
+└── README.md
+```
+
+---
+
+## **Uso de la Aplicación**
+
+1. **Registro e Inicio de Sesión:**
+   - Los usuarios pueden registrarse e iniciar sesión para acceder a las funcionalidades.
+
+2. **Gestión de Espacios:**
+   - Los administradores pueden crear, editar y eliminar espacios.
+
+3. **Reservas:**
+   - Los usuarios pueden reservar espacios y ver sus reservas en un calendario interactivo.
+
+4. **Notificaciones:**
+   - Los usuarios reciben correos de confirmación y recordatorios de sus reservas.
+
+---
+
+## **Contribución**
+
+Si deseas contribuir al proyecto, sigue estos pasos:
+
+1. Haz un fork del repositorio.
+2. Crea una rama para tu contribución:
+   ```bash
+   git checkout -b mi-contribucion
+   ```
+3. Realiza tus cambios y haz commit:
+   ```bash
+   git commit -m "Descripción de los cambios"
+   ```
+4. Envía un pull request.
+
+---
+
+## **Licencia**
+
+Este proyecto está bajo la licencia **MIT**. Para más detalles, consulta el archivo [LICENSE](LICENSE).
+
+---
+
+## **Contacto**
+
+Si tienes alguna pregunta o sugerencia, no dudes en contactarme:
+
+- **Nombre:** [Tu Nombre]
+- **Email:** [tu-email@example.com]
+- **GitHub:** [https://github.com/tu-usuario]
+
+---
+
+¡Gracias por usar **ReservacionesFDI**! 🚀
+
+  --EVIDENCIAS
+  file:///C:/Users/cjean/Downloads/Imagen1.png
+  
+
