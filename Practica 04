@@ -1,0 +1,112 @@
+// LoginServlet.java
+import java.io.*;
+import javax.servlet.*;
+import javax.servlet.annotation.*;
+import javax.servlet.http.*;
+import io.jsonwebtoken.*;
+import java.util.*;
+
+@WebServlet("/autenticacion-servlet/login")
+public class LoginServlet extends HttpServlet {
+    private static final long EXPIRATION_TIME = 5 * 60 * 1000; // 5 minutos
+
+    protected void doPost(HttpServletRequest request, HttpServletResponse response) throws IOException {
+        String usernameOrEmail = request.getParameter("username");
+        String password = request.getParameter("password");
+        
+        User user = Database.getUserByUsernameOrEmail(usernameOrEmail);
+        if (user != null && user.getPassword().equals(password)) {
+            String token = Jwts.builder()
+                    .setSubject(user.getUsername())
+                    .setExpiration(new Date(System.currentTimeMillis() + EXPIRATION_TIME))
+                    .signWith(SignatureAlgorithm.HS512, "SecretKey")
+                    .compact();
+            response.getWriter().write(token);
+        } else {
+            response.sendError(HttpServletResponse.SC_UNAUTHORIZED);
+        }
+    }
+}
+
+// RegisterServlet.java
+@WebServlet("/autenticacion-servlet/register")
+public class RegisterServlet extends HttpServlet {
+    protected void doPost(HttpServletRequest request, HttpServletResponse response) throws IOException {
+        String username = request.getParameter("username");
+        String password = request.getParameter("password");
+        String fullName = request.getParameter("fullName");
+        String email = request.getParameter("email");
+        
+        if (Database.isUserExists(username, email)) {
+            response.sendError(HttpServletResponse.SC_UNPROCESSABLE_ENTITY, "Usuario o email ya existe.");
+        } else {
+            Database.addUser(new User(username, password, fullName, email));
+            response.getWriter().write("Usuario registrado exitosamente.");
+        }
+    }
+}
+
+// UserServlet.java
+@WebServlet("/user-servlet")
+public class UserServlet extends HttpServlet {
+    protected void doGet(HttpServletRequest request, HttpServletResponse response) throws IOException {
+        String token = request.getHeader("Authorization");
+        try {
+            Claims claims = Jwts.parser().setSigningKey("SecretKey").parseClaimsJws(token).getBody();
+            String username = claims.getSubject();
+            User user = Database.getUserByUsername(username);
+            response.setContentType("application/json");
+            response.getWriter().write(user.toJsonExcludingPassword());
+        } catch (Exception e) {
+            response.sendError(HttpServletResponse.SC_UNAUTHORIZED);
+        }
+    }
+}
+
+// Database.java (Simulación)
+public class Database {
+    private static Map<String, User> users = new HashMap<>();
+
+    public static boolean isUserExists(String username, String email) {
+        return users.values().stream().anyMatch(u -> u.getUsername().equals(username) || u.getEmail().equals(email));
+    }
+
+    public static void addUser(User user) {
+        users.put(user.getUsername(), user);
+    }
+
+    public static User getUserByUsernameOrEmail(String usernameOrEmail) {
+        return users.values().stream()
+                     .filter(u -> u.getUsername().equals(usernameOrEmail) || u.getEmail().equals(usernameOrEmail))
+                     .findFirst().orElse(null);
+    }
+
+    public static User getUserByUsername(String username) {
+        return users.get(username);
+    }
+}
+
+// User.java
+public class User {
+    private String username;
+    private String password;
+    private String fullName;
+    private String email;
+
+    public User(String username, String password, String fullName, String email) {
+        this.username = username;
+        this.password = password;
+        this.fullName = fullName;
+        this.email = email;
+    }
+
+    public String getUsername() { return username; }
+    public String getPassword() { return password; }
+    public String getFullName() { return fullName; }
+    public String getEmail() { return email; }
+
+    public String toJsonExcludingPassword() {
+        return String.format("{\"username\": \"%s\", \"fullName\": \"%s\", \"email\": \"%s\"}",
+                username, fullName, email);
+    }
+} 
