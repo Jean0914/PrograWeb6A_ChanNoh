@@ -1,0 +1,362 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <title>Calendario de Reservas</title>
+    <link href='https://cdn.jsdelivr.net/npm/fullcalendar@5.11.3/main.min.css' rel='stylesheet' />
+    <script src='https://cdn.jsdelivr.net/npm/fullcalendar@5.11.3/main.min.js'></script>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Sistema de Apartado - Escuela</title>
+  <style>
+
+
+    body {
+      font-family: Arial, sans-serif;
+      margin: 0;
+      background-color: #f4f4f4;
+    }
+    header {
+      background-color: #007bff;
+      color: white;
+      padding: 1rem;
+      text-align: center;
+    }
+
+    /* LOGIN */
+    #login-container {
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      height: 90vh;
+    }
+    .login-box {
+      background: white;
+      padding: 2rem;
+      border-radius: 10px;
+      box-shadow: 0 0 10px rgba(0,0,0,0.2);
+      width: 300px;
+    }
+    .login-box h2 {
+      margin-bottom: 1rem;
+      text-align: center;
+    }
+    .login-box input {
+      width: 100%;
+      padding: 0.5rem;
+      margin-bottom: 1rem;
+      border: 1px solid #ccc;
+      border-radius: 5px;
+    }
+    .login-box button {
+      width: 100%;
+      padding: 0.5rem;
+      background: #007bff;
+      color: white;
+      border: none;
+      border-radius: 5px;
+    }
+
+    /* APP */
+    .container {
+      display: none;
+      flex-direction: row;
+      padding: 1rem;
+      gap: 1rem;
+    }
+    .spaces {
+      width: 30%;
+      background: white;
+      border-radius: 8px;
+      padding: 1rem;
+      box-shadow: 0 0 8px rgba(0,0,0,0.1);
+    }
+    .spaces h3 {
+      margin-top: 0;
+    }
+    .spaces ul {
+      list-style: none;
+      padding: 0;
+    }
+    .spaces li {
+      padding: 0.5rem;
+      margin: 0.5rem 0;
+      background: #e9ecef;
+      cursor: pointer;
+      border-radius: 5px;
+      transition: 0.3s;
+    }
+    .spaces li:hover {
+      background-color: #ced4da;
+    }
+    .calendar {
+      width: 70%;
+      background: white;
+      border-radius: 8px;
+      padding: 1rem;
+      box-shadow: 0 0 8px rgba(0,0,0,0.1);
+    }
+    .calendar table {
+      width: 100%;
+      border-collapse: collapse;
+    }
+    .calendar th, .calendar td {
+      border: 1px solid #ccc;
+      text-align: center;
+      padding: 0.75rem;
+    }
+    .calendar th {
+      background-color: #f1f1f1;
+    }
+
+    /* Modal */
+    .modal {
+      display: none;
+      position: fixed;
+      top: 0; left: 0;
+      width: 100%; height: 100%;
+      background: rgba(0,0,0,0.5);
+      justify-content: center;
+      align-items: center;
+    }
+    .modal-content {
+      background: white;
+      padding: 2rem;
+      border-radius: 10px;
+      width: 400px;
+      position: relative;
+    }
+    .modal-content h2 {
+      margin-top: 0;
+    }
+    .modal-content label, input, select {
+      display: block;
+      width: 100%;
+      margin-bottom: 1rem;
+    }
+    .modal-content button {
+      padding: 0.5rem 1rem;
+      background: #007bff;
+      color: white;
+      border: none;
+      border-radius: 5px;
+      cursor: pointer;
+    }
+    .close {
+      position: absolute;
+      top: 10px; right: 15px;
+      cursor: pointer;
+      font-weight: bold;
+    }
+  </style>
+</head>
+<body>
+<tbody id="calendario-body"></tbody>
+
+  <header>
+    <h1>Sistema de Apartado Escolar</h1>
+    <h1>FACULTAD DE INGENIERIA. UAC</h1>
+  </header>
+
+  <!-- LOGIN -->
+  <div id="login-container">
+    <div class="login-box">
+      <h2>Iniciar Sesión</h2>
+      <input type="text" id="usuario" placeholder="Usuario" />
+      <input type="password" id="clave" placeholder="Contraseña" />
+      <button onclick="login()">Ingresar</button>
+      <p id="login-error" style="color:red; text-align:center;"></p>
+    </div>
+  </div>
+
+  <!-- APP PRINCIPAL -->
+  <div class="container" id="app">
+    <div class="spaces">
+      <h3>Espacios Disponibles</h3>
+      <ul>
+        <li onclick="openModal('Biblioteca')">Biblioteca</li>
+        <li onclick="openModal('Salón 101')">Sala Didactica</li>
+        <li onclick="openModal('Laboratorio de Redes')">Laboratorio de Redes</li>
+        <li onclick="openModal('Sala de Cómputo 1')">Sala de Cómputo 1</li>
+        <li onclick="openModal('Sala de Cómputo 2')">Sala de Cómputo 2</li>
+        <li onclick="openModal('Sala de Cómputo 3')">Sala de Cómputo 3</li>
+        <li onclick="openModal('Sala de Conferencias')">Sala de Conferencias</li>
+        <li onclick="openModal('Laboratorio IDI')">Laboratorio IDI</li>
+      </ul>
+    </div>
+
+    <div class="calendar">
+      <h3>Calendario (Semana)</h3>
+      <table>
+        <thead>
+          <tr>
+            <th>Hora</th>
+            <th>Lunes</th>
+            <th>Martes</th>
+            <th>Miércoles</th>
+            <th>Jueves</th>
+            <th>Viernes</th>
+          </tr>
+        </thead>
+        <tbody>
+          <script>
+            for (let hour = 7; hour <= 14; hour++) {
+              document.write('<tr>');
+              document.write(`<td>${hour}:00 - ${hour+1}:00</td>`);
+              for (let d = 0; d < 5; d++) {
+                document.write(`<td></td>`);
+              }
+              document.write('</tr>');
+            }
+
+            <!-- ... mantiene el código anterior hasta el final del <body> -->  
+  const reservas = []; // Array para guardar reservas
+
+  const dias = ['Lunes', 'Martes', 'Miércoles', 'Jueves', 'Viernes'];
+  const horas = ['07:00','08:00','09:00','10:00','11:00','12:00','13:00','14:00'];
+
+  // Función para iniciar sesión
+  function login() {
+    const usuario = document.getElementById("usuario").value;
+    const clave = document.getElementById("clave").value;
+    const error = document.getElementById("login-error");
+
+    if (usuario === "maestro" && clave === "1234") {
+      document.getElementById("login-container").style.display = "none";
+      document.getElementById("app").style.display = "flex";
+      sessionStorage.setItem('usuario', usuario);
+    } else {
+      error.textContent = "Credenciales incorrectas";
+    }
+  }
+
+  function openModal(espacio) {
+    document.getElementById('espacio').value = espacio;
+    document.getElementById('modal').style.display = 'flex';
+  }
+
+  function closeModal() {
+    document.getElementById('modal').style.display = 'none';
+  }
+
+  function getDiaIndex(fecha) {
+    const date = new Date(fecha);
+    const day = date.getDay();
+    return day >= 1 && day <= 5 ? day - 1 : -1; // Lunes a Viernes (0-4)
+  }
+  async function submitForm(e) {
+    e.preventDefault();
+    const espacio = document.getElementById('espacio').value;
+    const fecha = document.getElementById('fecha').value;
+    const hora = document.getElementById('hora').value;
+    const usuario = sessionStorage.getItem('usuario') || "maestro";
+
+    // Validación
+    const diaIndex = getDiaIndex(fecha);
+    if (diaIndex === -1) {
+      alert("Solo puedes reservar de lunes a viernes.");
+      return;
+    }
+
+    const horaIndex = horas.indexOf(hora);
+    if (horaIndex === -1) return;
+    const fila = document.querySelectorAll(".calendar tbody tr")[horaIndex];
+    const celda = fila.children[diaIndex + 1];
+    if (celda.textContent !== '') {
+      alert("Ya está reservado ese espacio en ese horario.");
+      return;
+    }
+
+    // GUARDAR en el backend
+    const reserva = {espacio, fecha, hora, usuario};
+    const respuesta = await fetch('http://localhost:8080/api/reservas', {
+      method: 'POST',
+      headers: {'Content-Type': 'application/json'},
+      body: JSON.stringify(reserva)
+    });
+
+    if (respuesta.ok) {
+      celda.innerHTML = `<strong>${espacio}</strong><br><em>${usuario}</em>`;
+      alert("Reserva registrada exitosamente.");
+      closeModal();
+    } else {
+      alert("Error al registrar reserva.");
+    }
+
+    }
+
+    // Registrar reserva
+    celda.innerHTML = `<strong>${espacio}</strong><br><em>${usuario}</em>`;
+    reservas.push({espacio, fecha, hora, usuario});
+    alert("Reserva registrada exitosamente.");
+    closeModal();
+  
+          </script>
+        </tbody>
+      </table>
+    </div>
+  </div>
+
+  <!-- Modal de Reserva -->
+  <div class="modal" id="modal">
+    <div class="modal-content">
+      <span class="close" onclick="closeModal()">&times;</span>
+      <h2>Reservar Espacio</h2>
+      <form onsubmit="submitForm(event)">
+        <label>Espacio:</label>
+        <input type="text" id="espacio" readonly />
+
+        <label>Fecha:</label>
+        <input type="date" id="fecha" required />
+
+        <label>Hora:</label>
+        <select id="hora">
+          <option value="07:00">07:00 - 08:00</option>
+          <option value="08:00">08:00 - 09:00</option>
+          <option value="09:00">09:00 - 10:00</option>
+          <option value="10:00">10:00 - 11:00</option>
+          <option value="11:00">11:00 - 12:00</option>
+          <option value="12:00">12:00 - 13:00</option>
+          <option value="13:00">13:00 - 14:00</option>
+          <option value="14:00">14:00 - 15:00</option>
+        </select>
+
+        <button type="submit">Apartar</button>
+      </form>
+    </div>
+  </div>
+
+  <!-- JS -->
+  <script>
+    function login() {
+      const usuario = document.getElementById("usuario").value;
+      const clave = document.getElementById("clave").value;
+      const error = document.getElementById("login-error");
+
+      if (usuario === "maestro" && clave === "1234") {
+        document.getElementById("login-container").style.display = "none";
+        document.getElementById("app").style.display = "flex";
+      } else {
+        error.textContent = "Credenciales incorrectas";
+      }
+    }
+
+    function openModal(espacio) {
+      document.getElementById('espacio').value = espacio;
+      document.getElementById('modal').style.display = 'flex';
+    }
+
+    function closeModal() {
+      document.getElementById('modal').style.display = 'none';
+    }
+
+    function submitForm(e) {
+      e.preventDefault();
+      const espacio = document.getElementById('espacio').value;
+      const fecha = document.getElementById('fecha').value;
+      const hora = document.getElementById('hora').value;
+      alert(`Reserva realizada:\n${espacio}\n${fecha} a las ${hora}`);
+      closeModal();
+    }
+  </script>
+</body>
+</html>
